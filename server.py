@@ -1,21 +1,17 @@
 from flask import Flask
-import threading, time, requests
+from telegram_to_site import client, sincronizar_100
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route("/")
 def home():
-    return "Videx Telegram Bot RUNNING!"
+    return "Videx Telegram Sync ativo!"
 
-def keepalive():
-    url = "https://videx-telegram-sync.onrender.com"
-    while True:
-        try:
-            requests.get(url)
-        except:
-            pass
-        time.sleep(60)
+@app.route("/sync100")
+def sync100():
+    client.loop.create_task(sincronizar_100())
+    return "✔ Sincronização iniciada: buscando últimas 100 mensagens..."
 
 if __name__ == "__main__":
-    threading.Thread(target=keepalive).start()
-    app.run(host="0.0.0.0", port=10000)
+    client.start()
+    app.run(host="0.0.0.0", port=5000)
