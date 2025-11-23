@@ -6,7 +6,6 @@ from telegram_to_site import client, sincronizar_100
 
 app = Flask(__name__)
 
-# FILA DE TAREFAS
 task_queue = asyncio.Queue()
 
 @app.route("/")
@@ -15,7 +14,6 @@ def home():
 
 @app.route("/sync100")
 def sync100():
-    # adiciona tarefa à fila
     task_queue.put_nowait(("sync100",))
     return "✔ Sincronização iniciada: buscando últimas 100 mensagens..."
 
@@ -23,23 +21,29 @@ async def task_worker():
     while True:
         task = await task_queue.get()
         if task[0] == "sync100":
+            print("➡ Executando sincronização...")
             await sincronizar_100()
+            print("✔ Sincronização concluída!")
         task_queue.task_done()
+
+async def async_setup():
+    # Conecta o cliente Telethon corretamente
+    await client.connect()
+    
+    if not await client.is_user_authorized():
+        print("❌ ERRO: sessão inválida. O arquivo .session não é aceito.")
+    else:
+        print("✔ Sessão Telethon conectada com sucesso!")
+
+    # Inicia worker
+    asyncio.create_task(task_worker())
 
 def start_async_loop():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-
-    # inicia o cliente Telethon
-    loop.run_until_complete(client.start())
-
-    # inicia o worker
-    loop.create_task(task_worker())
-
-    # roda eternamente
+    loop.run_until_complete(async_setup())
     loop.run_forever()
 
-# inicia o loop async em thread separada
 threading.Thread(target=start_async_loop, daemon=True).start()
 
 if __name__ == "__main__":
