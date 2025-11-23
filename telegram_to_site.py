@@ -3,8 +3,8 @@ import requests
 import os
 
 # CONFIGS
-api_id = 25121993
-api_hash = "fa34e7f8e27e8caaa3beea2cdfbd9a5f"
+api_id = 34508499
+api_hash = "0cc400409a89be0c4fdac9bdd68a8ea5"
 telefone = "+5519998055114"
 
 grupo_origem = -2830928638
