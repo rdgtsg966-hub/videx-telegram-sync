@@ -7,7 +7,7 @@ api_id = 34508499
 api_hash = "0cc400409a89be0c4fdac9bdd68a8ea5"
 
 # ID do grupo de origem (altere aqui se quiser mudar o grupo)
-GRUPO_ORIGEM = -2830928638
+GRUPO_ORIGEM = -5089921462
 
 # URL do seu site que recebe o vídeo + descrição
 WEBHOOK_SITE = "https://videx.space/receive.php"
