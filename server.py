@@ -6,31 +6,30 @@ from telegram_to_site import client, sincronizar_100
 
 app = Flask(__name__)
 
-# fila de tarefas para rodar no loop principal
+# fila de tarefas
 task_queue = asyncio.Queue()
 
 
 @app.route("/")
 def home():
-    return "Videx Telegram Sync ativo! Use /sync100 para puxar as últimas 100 mensagens."
+    return "Videx Telegram Sync ativo!"
 
 
 @app.route("/sync100")
 def sync100():
-    # adiciona tarefa à fila (será executada no loop async do Telethon)
     task_queue.put_nowait(("sync100",))
-    return "✔ Sincronização iniciada: buscando últimas 100 mensagens (apenas vídeos com legenda)."
+    return "✔ Iniciando sincronização das últimas 100 mensagens..."
 
 
 async def task_worker():
-    """Worker que consome a fila e executa as tarefas no loop principal."""
+    """Executa tarefas da fila dentro do loop principal."""
     while True:
         task = await task_queue.get()
         try:
             if task[0] == "sync100":
-                print("➡ Executando sincronização /sync100...")
+                print("➡ Executando /sync100...")
                 await sincronizar_100()
-                print("✔ Sincronização /sync100 concluída!")
+                print("✔ /sync100 concluído!")
         except Exception as e:
             print(f"❌ Erro no worker: {e}")
         finally:
@@ -38,28 +37,30 @@ async def task_worker():
 
 
 async def async_setup():
-    """Configura o cliente Telethon e inicia o worker + listener."""
-    # conecta usando a sessão existente
-    await client.connect()
+    """Inicia Telethon + worker + listener."""
+    print("🔌 Iniciando sessão Telethon...")
 
-    if not await client.is_user_authorized():
-        print("❌ Sessão inválida. Verifique o arquivo sessao_videx.session.")
-    else:
-        print("✔ Sessão Telethon conectada com sucesso!")
+    # client.start() = conecta + autentica + habilita listeners
+    await client.start()
 
-    # inicia worker de tarefas
+    print("✔ Telethon iniciado!")
+
+    # worker
     asyncio.create_task(task_worker())
+
+    # MUITO IMPORTANTE: mantém o cliente vivo
+    asyncio.create_task(client.run_until_disconnected())
 
 
 def start_async_loop():
-    """Cria e mantém o loop async em uma thread separada."""
+    """Loop async do Telethon rodando em thread separada."""
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(async_setup())
     loop.run_forever()
 
 
-# inicia o loop assíncrono (Telethon + worker) em background
+# inicia a thread do Telegram
 threading.Thread(target=start_async_loop, daemon=True).start()
 
 
