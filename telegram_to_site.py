@@ -7,6 +7,7 @@ api_hash = "0cc400409a89be0c4fdac9bdd68a8ea5"
 GRUPO_ORIGEM = -2830928638
 
 client = TelegramClient("sessao_videx", api_id, api_hash)
+client.parse_mode = "html"
 
 def salvar_no_site(filename, caption):
     outdir = "site_media"
@@ -15,20 +16,32 @@ def salvar_no_site(filename, caption):
         f.write(caption or "")
 
 async def sincronizar_100():
+    print("\n⏳ Iniciando client...")
+    await client.start()  # <-- ESSENCIAL !!!
+
     print("\n⏳ Buscando as últimas 100 mensagens...")
     count = 0
+
     async for msg in client.iter_messages(GRUPO_ORIGEM, limit=100):
         if not msg.media:
             continue
+
         caption = msg.text or ""
+
+        # Vídeo
         if msg.video:
             filename = f"video_{msg.id}.mp4"
             await msg.download_media(file=os.path.join("site_media", filename))
             salvar_no_site(filename, caption)
+            print(f"🎥 Vídeo salvo: {filename}")
             count += 1
+
+        # Foto
         elif msg.photo:
             filename = f"foto_{msg.id}.jpg"
             await msg.download_media(file=os.path.join("site_media", filename))
             salvar_no_site(filename, caption)
+            print(f"🖼 Foto salva: {filename}")
             count += 1
+
     print(f"✔ Finalizado! {count} arquivos capturados.")
