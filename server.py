@@ -8,7 +8,7 @@ def home():
     return "Videx Telegram Bot RUNNING!"
 
 def keepalive():
-    url = "https://SEU-SERVICO-RENDER.onrender.com"
+    url = "https://videx-telegram-sync.onrender.com"
     while True:
         try:
             requests.get(url)
