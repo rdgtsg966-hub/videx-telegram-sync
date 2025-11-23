@@ -7,7 +7,7 @@ api_id = 34508499
 api_hash = "0cc400409a89be0c4fdac9bdd68a8ea5"
 telefone = "+5519998055114"
 
-grupo_origem = 5125851641
+grupo_origem = -5089921462
 webhook_site = "https://videx.space/receive.php"
 
 client = TelegramClient("sessao_videx", api_id, api_hash)
