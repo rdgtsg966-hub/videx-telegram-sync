@@ -1,41 +1,28 @@
 from flask import Flask
-import asyncio, threading
-from telegram_to_site import client, sincronizar_100
+import threading
+import asyncio
+
+from telegram_to_site import client
 
 app = Flask(__name__)
-task_queue = asyncio.Queue()
 
 @app.route("/")
 def home():
-    return "Videx Telegram Sync ativo!"
+    return "Listener ativo — aguardando novas mensagens do Telegram."
 
-@app.route("/sync100")
-def sync100():
-    task_queue.put_nowait(("sync100",))
-    return "➡ Sync100 iniciado"
-
-async def task_worker():
-    while True:
-        t = await task_queue.get()
-        if t[0]=="sync100":
-            await sincronizar_100()
-        task_queue.task_done()
-
-async def async_setup():
-    print("🔌 Iniciando sessão Telethon...")
+async def iniciar_telethon():
     await client.start()
-    print("✔ Telethon conectado!")
-    asyncio.create_task(task_worker())
+    print("✔ Listener conectado ao Telegram!")
+    await client.run_until_disconnected()
 
-def start_loop():
-    loop=asyncio.new_event_loop()
+def thread_async():
+    loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(async_setup())
-    loop.run_forever()
+    loop.run_until_complete(iniciar_telethon())
 
-threading.Thread(target=start_loop, daemon=True).start()
+threading.Thread(target=thread_async, daemon=True).start()
 
 if __name__ == "__main__":
     import os
-    port=int(os.environ.get("PORT",5000))
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
